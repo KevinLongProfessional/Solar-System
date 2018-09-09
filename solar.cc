@@ -7,16 +7,21 @@
 #include <vector>
 #include <string.h>
 
-
 using namespace std;
-double xVal=250;
-double yVal=0;
+//global variables.
+double xVal=0;
+double yVal=300;
 double zVal=0;
 float earthRotation;
 bool showText = false;
 bool showPluto = false;
 bool paused = false;
-
+GLUquadric *quad;
+float speed;
+double sunRadius = 5.0;
+GLfloat sunPosition[] = {0.0,0.0,0.0,1.0};
+float optionsHeight;
+float optionsWidth;
 float buttonPositions[8][2];
 float buttonColors[8][3] = {{0, 0, 0},
 {0, 0, 0.5},
@@ -28,10 +33,6 @@ float buttonColors[8][3] = {{0, 0, 0},
 {0.5, 0.5, 0.5}
 };
 
-float speed = 0.1;
-double sunRadius = 5.0;
-GLfloat sunPosition[] = {0.0,0.0,0.0,1.0};
-
 void writeText(float x, float y, char const* text, void* font){
 	int l=strlen( text );
 	glRasterPos2f( x, y);
@@ -41,255 +42,123 @@ void writeText(float x, float y, char const* text, void* font){
 	}
 }
 
-void drawTextOnPlanet(char* text){
+void drawTextOnPlanet(char const* text){
 	glDisable (GL_LIGHTING);
 	glDisable (GL_DEPTH_TEST);
 	glRasterPos2i( 0, 0);
 	writeText(0,0, text, GLUT_BITMAP_TIMES_ROMAN_10);
-	glEnable (GL_LIGHTING);
+	glEnable (GL_LIGHTING);		
 	glEnable (GL_DEPTH_TEST);
 }
 
-
-void Keyboard (unsigned char key, int x, int y) {  
-    if(key=='q'||key=='Q')
-        glutDestroyWindow(1);
-    if(key=='a'||key=='A')
-    {
-
-        xVal=xVal+1;
-        //std::cout<<xVal;
-        glutPostRedisplay();
-
-
-        glFlush ();
-    }
-
-    if(key=='d'||key=='D')
-    {
-
-        xVal=xVal-1;
-        //std::cout<<xVal;
-        glutPostRedisplay();
-        
-
-
-        glFlush ();
-    }
-    if(key=='w'||key=='W')
-    {
-
-        zVal=zVal-1;
-
-        glutPostRedisplay();
-       
-
-        glFlush ();
-    }
-
-    if(key=='s'||key=='S')
-    {
-
-        zVal=zVal+1;
-
-        glutPostRedisplay();
-     
-
-
-        glFlush ();
-    }
-
-if(key=='k'||key=='K')
-    {
-
-        yVal=yVal-1;
-
-        glutPostRedisplay();
-
-        glFlush ();
-    }
-
-if(key=='l'||key=='L')
-    {
-
-        yVal=yVal+1;
-
-        glutPostRedisplay();
-     
-        glFlush ();
-    }
+void drawPlanet(float r, float g, float b, float size, float distance, float rotationRatio, const char* PlanetName)
+{
+	glPushMatrix(); 
+	glColor3f(r,g,b);
+	glRotated(earthRotation * rotationRatio, 0, 1, 0);
+	glTranslated(0,0,distance * -1); 
+	gluSphere(quad, size, 20, 20);
+	if(showText)
+	{
+		drawTextOnPlanet(PlanetName);
+	}
+	glPopMatrix();
 }
+
 
 void reshape (int w, int h)
 {
 
-   glViewport (0, 0, (GLsizei) w, (GLsizei) h);
-   glMatrixMode (GL_PROJECTION);
-   glLoadIdentity();
-   gluPerspective(40.0, (GLfloat) w/(GLfloat) h, 1.0, 1000.0);
-   glMatrixMode(GL_MODELVIEW);
+	glViewport (0, 0, (GLsizei) w, (GLsizei) h);
+	glMatrixMode (GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(40.0, (GLfloat) w/(GLfloat) h, 1.0, 1000.0);
+	glMatrixMode(GL_MODELVIEW);
 }
 
 
 void display(){
-
-	glPushMatrix ();
+	
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	glLoadIdentity(); 
-	gluLookAt(xVal, yVal, zVal, 0, 0,-1, 0, 1, 0);
-
-   	glEnable(GL_DEPTH_TEST);
+	gluLookAt(xVal, yVal, zVal, 0, 0, -1, 0, 1, 0);
+	//glEnable (GL_DEPTH_TEST);
 
 	glColor3f(1.0,1.0,1.0);
-	GLUquadric *quad;
+	
 	quad = gluNewQuadric();
 
 	glDisable (GL_LIGHTING);
 
+	string planetNames[9] = {"Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"};
+
 	//Sun
 	gluSphere(quad, sunRadius, 20, 20);
 	glLightfv (GL_LIGHT0, GL_POSITION, sunPosition);
+
 	glEnable(GL_LIGHT0);
 	glEnable (GL_LIGHTING);
 	glColorMaterial ( GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE ) ;
 	glEnable ( GL_COLOR_MATERIAL ) ;
+	
 
 	//Mercury
-
-	glPushMatrix(); 
-	glColor3f(0.6,0.6,0.6); //to do: replace with gl material stuff
-	glRotated(earthRotation * 4.15 * speed, 0, 1, 0);
-	glTranslated(0,0,-20); 
-	gluSphere(quad, 1, 20, 20);
-	if(showText)
-	{
-		char earthText[32] = "Mercury";
-		drawTextOnPlanet(earthText);
-	}
-	glPopMatrix();
+	drawPlanet(0.9, 0.7, 0.1, 1.0, 20.0, 4.15, planetNames[0].c_str());
 
 	//Venus
-
-	glPushMatrix(); 
-	glColor3f(0.9,0.7,0.1);
-	glRotated(earthRotation * 1.62 * speed, 0, 1, 0);
-	glTranslated(0,0,-30);
-	gluSphere(quad, 1, 20, 20);
-	if(showText)
-	{
-		char earthText[32] = "Venus"; //to do: change name to planetText or something.
-		drawTextOnPlanet(earthText);
-	}
-	glPopMatrix();
+	drawPlanet(0.9, 0.7, 0.1, 1.0, 30.0, 1.62, planetNames[1].c_str());
 
 	//Earth
-	glPushMatrix(); 
-	glColor3f(0.0,0.3,1.0);
-	glRotated(earthRotation * speed, 0, 1, 0);
-	glTranslated(0,0,-40);
-	gluSphere(quad, 1, 20, 20);
-	if(showText)
-	{
-		char earthText[32] = "Earth";
-		drawTextOnPlanet(earthText);
-	}
-	glPopMatrix();
+	drawPlanet(0.0, 0.3, 1.0, 1.0, 40.0, 1.0, planetNames[2].c_str());
 
 	//Mars
-	glPushMatrix(); 
-	glColor3f(1.0,0.0,0.0);
-	glRotated(earthRotation * 0.531 * speed, 0, 1, 0);
-	glTranslated(0,0,-50); 
-	gluSphere(quad, 1, 20, 20);
-	if(showText)
-	{
-		char earthText[32] = "Mars";
-		drawTextOnPlanet(earthText);
-	}
-	glPopMatrix();
+	drawPlanet(1.0, 0.0, 0.0, 1.0, 50.0, 0.531, planetNames[3].c_str());
 
 
-	//Jupiter
-	glPushMatrix(); 
-	glColor3f(1.0,1.0,0.0);
-	glRotated(earthRotation * 0.083 * speed, 0, 1, 0);
-	glTranslated(0,0,-60); 
-	gluSphere(quad, 3, 20, 20);
-	if(showText)
-	{
-		char earthText[32] = "Jupiter";
-		drawTextOnPlanet(earthText);
-	}
-	glPopMatrix();
+	//Jupiter;
+	drawPlanet(1.0, 1.0, 0.0, 3.0, 60.0, 0.083, planetNames[4].c_str());
 
-	//Saturn
+	//Saturn (coded manually to account for ring)
 	glPushMatrix(); 
-	glColor3f(1.0,0.0,0.0);
-	glRotated(earthRotation * 0.0344 * speed, 0, 1, 0);
+	glColor3f(1.0,0.5,0.0);
+	glRotated(earthRotation * 0.0344, 0, 1, 0);
 	glTranslated(0,0,-70); 
 	gluSphere(quad, 2, 20, 20);
-	glColor3f(0.0,0.0,1.0);
+
+	glColor3f(0.9,0.5,0.0);
 	glRotated(90, 1, 0, 0);
 	glutSolidTorus(0.3, 3, 20, 20);
 	if(showText)
 	{
-		char earthText[32] = "Saturn";
-		drawTextOnPlanet(earthText);
+		drawTextOnPlanet(planetNames[5].c_str());
 	}
 	glPopMatrix();
 
 	//Uranus
-	glPushMatrix();
-	glColor3f(0.9,0.9,0.9);
-	glRotated(earthRotation * 0.0119 * speed, 0, 1, 0);
-	glTranslated(0,0,-80); 
-	gluSphere(quad, 1, 20, 20);
-	if(showText)
-	{
-		char earthText[32] = "Uranus";
-		drawTextOnPlanet(earthText);
-	}
-	glPopMatrix();
+	drawPlanet(0.9, 0.9, 0.9, 1.0, 80.0, 0.0119, planetNames[6].c_str());
 
 	//Neptune
-	glPushMatrix(); 
-	glColor3f(0.0,0.0,0.9);
-	glRotated(earthRotation * 0.00606 * speed, 0, 1, 0);
-	glTranslated(0,0,-90); 
-	gluSphere(quad, 1, 20, 20);
-	if(showText)
-	{
-		char earthText[32] = "Neptune";
-		drawTextOnPlanet(earthText);
-	}
-	glPopMatrix();
+	drawPlanet(0.0, 0.0, 0.9, 1.0, 90.0, 0.00606, planetNames[7].c_str());
 
 	if (showPluto)
 	{
 		//Pluto
-		glPushMatrix(); 
-		glColor3f(0.9,0.5,0.9);
-		glRotated(earthRotation * 0.00403 * speed, 0, 1, 0);
-		glTranslated(0,0,-100); 
-		gluSphere(quad, 1, 20, 20);
-		if(showText)
-		{
-			char earthText[32] = "Pluto";
-			drawTextOnPlanet(earthText);
-		}
-		glPopMatrix();
+		drawPlanet(0.9, 0.5, 0.9, 1.0, 100.0, 0.00403, planetNames[8].c_str());
 	}
 
-	glPopMatrix();
-	if(!paused)
-		earthRotation++;
+	if(!paused){
+		earthRotation+= speed;
+	}
+
 	glutPostRedisplay();
    	glutSwapBuffers();
    	glFlush();
-	
 }
 
-
+void init(){
+	speed = 0.1;
+	glEnable (GL_DEPTH_TEST);
+}
 
 void drawRectangle(float x, float y, float width, float height)
 {
@@ -302,34 +171,32 @@ void drawRectangle(float x, float y, float width, float height)
 
 }
 
-void init2(void) 
+void initOptions(void) 
 {
-
-   glLoadIdentity();
-   glClear (GL_COLOR_BUFFER_BIT );
+	glLoadIdentity();
+	glClear (GL_COLOR_BUFFER_BIT );
 	for(int i = 0; i < 8; i++)
 	{
-	buttonPositions[i][0] = floor(i/4) - 1; 
-	buttonPositions[i][1] = 0.5 - ((i) % 4) * 0.5 ;
+		buttonPositions[i][0] = floor(i/4) - 1; 
+		buttonPositions[i][1] = 0.5 - ((i) % 4) * 0.5 ;
 	}
-
-
 }
 
-void reshape2 (int w, int h)
+void reshapeOptions (int w, int h)
 {
-
-   glViewport (0, 0, (GLsizei) w, (GLsizei) h);
-   glMatrixMode (GL_PROJECTION);
-   glLoadIdentity();
-   glMatrixMode(GL_MODELVIEW);
+	glViewport (0, 0, (GLsizei) w, (GLsizei) h);
+	optionsWidth = w;
+	optionsHeight = h;
+	glMatrixMode (GL_PROJECTION);
+	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
 }
 
-void display2(){
+void displayOptions(){
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	glLoadIdentity();
 
-	string buttonText[8] = {"Top View", "Side View", "Isometric View", "Display Names", "Pluto", "6", "Speed Up", "Pause/Play"};
+	string buttonText[8] = {"Top View", "Side View", "Isometric View", "Display Names", "Include Pluto", "Pause", "Speed Up", "Slow Down"};
 
 	for(int i = 0; i < 8; i++)
 	{
@@ -338,7 +205,7 @@ void display2(){
 		glColor3f(buttonColors[i][0], buttonColors[i][1], buttonColors[i][2]);
 		drawRectangle(buttonPositions[i][0],buttonPositions[i][1],1,0.5);
 		glColor3f(1, 1, 1);
-		writeText(buttonPositions[i][0], buttonPositions[i][1], buttonText[i].c_str(), GLUT_BITMAP_TIMES_ROMAN_24);
+		writeText(buttonPositions[i][0], buttonPositions[i][1] + 0.1, buttonText[i].c_str(), GLUT_BITMAP_TIMES_ROMAN_24);
 	}
 
 	glFlush();
@@ -360,12 +227,14 @@ int getButtonHit(float x, float y){
 
 
 // to do: add speed up, slow down, show text, and pluto buttons
-void mouse2(int button, int state, int x, int y){
+void mouseOptions(int button, int state, int x, int y){
 	if(button == GLUT_LEFT_BUTTON && state == GLUT_UP)
 	{
-		//convert to coordinate number range.
-		float newX = (((x) * (2)) / (500.0)) + -1;
-		float newY = ((((y) * (2)) / (500.0)) + -1) * -1;
+		//convert pixel position to -1 to 1 number range.
+		float newX = (((x) * (2)) / (optionsWidth)) + -1; //to do: use a variable instead of 500.
+		float newY = ((((y) * (2)) / (optionsHeight)) + -1) * -1;
+
+		//determine which button was pressed and respond accordingly.
 		switch(getButtonHit(newX, newY))
 		{
 			case 0:
@@ -393,27 +262,16 @@ void mouse2(int button, int state, int x, int y){
 			paused = !paused;
 			break;
 			case 6:
-			speed += 0.1;
+			speed += 0.05;
 			break;
 			case 7:
-			if(speed > 0)
-				speed -= 0.1;
+			if(speed > 0.06)
+			{
+				speed -= 0.05;
+			}
 			break;
 		}
 	}
-}
-
-
-
-void init(){
-   	//glClearColor (0.0, 0.0, 0.0, 0.0);
-	//glLoadIdentity();
-	//gluPerspective(40.0, (GLfloat) 500/(GLfloat) 500, 1.0, 100.0);
-
-   	//glShadeModel (GL_SMOOTH);
-   	//glEnable(GL_LIGHTING);
-   	//glEnable(GL_LIGHT0);
-   	//glEnable(GL_DEPTH_TEST);
 }
 
 int main(int argc, char** argv){
@@ -422,21 +280,19 @@ int main(int argc, char** argv){
 
    	glutInitWindowSize (500, 500); 
    	glutInitWindowPosition (200, 100);
-	init();
-
 	glutCreateWindow ("Solar System");
-	glutKeyboardFunc(Keyboard);
-	glutDisplayFunc(display); 
+	init();
+	glutDisplayFunc(display);	 
 	glutReshapeFunc(reshape);
 
 
 	glutInitWindowPosition (700, 100);
-	init2();
+	initOptions();
 	glutCreateWindow ("Options");
 
-	glutDisplayFunc(display2); 
-	glutReshapeFunc(reshape2);
-	glutMouseFunc(mouse2);
+	glutDisplayFunc(displayOptions); 
+	glutReshapeFunc(reshapeOptions);
+	glutMouseFunc(mouseOptions);
 
 	glutMainLoop();
 
