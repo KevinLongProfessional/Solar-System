@@ -66,7 +66,7 @@ void drawPlanet(float r, float g, float b, float size, float distance, float rot
 }
 
 
-void reshape (int w, int h)
+void reshapeGraphics (int w, int h)
 {
 
 	glViewport (0, 0, (GLsizei) w, (GLsizei) h);
@@ -77,14 +77,14 @@ void reshape (int w, int h)
 }
 
 
-void display(){
+void displayGraphics(){
 	
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 	glLoadIdentity(); 
 	gluLookAt(xVal, yVal, zVal, 0, 0, -1, 0, 1, 0);
 	//glEnable (GL_DEPTH_TEST);
 
-	glColor3f(1.0,1.0,1.0);
+	glColor3f(1.0,1.0,0.0);
 	
 	quad = gluNewQuadric();
 
@@ -103,7 +103,7 @@ void display(){
 	
 
 	//Mercury
-	drawPlanet(0.9, 0.7, 0.1, 1.0, 20.0, 4.15, planetNames[0].c_str());
+	drawPlanet(0.6, 0.6, 0.6, 1.0, 20.0, 4.15, planetNames[0].c_str());
 
 	//Venus
 	drawPlanet(0.9, 0.7, 0.1, 1.0, 30.0, 1.62, planetNames[1].c_str());
@@ -155,11 +155,12 @@ void display(){
    	glFlush();
 }
 
-void init(){
+void initGraphics(){
 	speed = 0.1;
 	glEnable (GL_DEPTH_TEST);
 }
 
+//draws a colored rectangle for the UI.
 void drawRectangle(float x, float y, float width, float height)
 {
 	glBegin(GL_POLYGON);
@@ -169,17 +170,6 @@ void drawRectangle(float x, float y, float width, float height)
   	glVertex3f(x + width, y, 0.0);
  	glEnd();
 
-}
-
-void initOptions(void) 
-{
-	glLoadIdentity();
-	glClear (GL_COLOR_BUFFER_BIT );
-	for(int i = 0; i < 8; i++)
-	{
-		buttonPositions[i][0] = floor(i/4) - 1; 
-		buttonPositions[i][1] = 0.5 - ((i) % 4) * 0.5 ;
-	}
 }
 
 void reshapeOptions (int w, int h)
@@ -210,8 +200,17 @@ void displayOptions(){
 
 	glFlush();
 	glutPostRedisplay();
-   	
+}
 
+void initOptions(void) 
+{
+	glLoadIdentity();
+	glClear (GL_COLOR_BUFFER_BIT );
+	for(int i = 0; i < 8; i++)
+	{
+		buttonPositions[i][0] = floor(i/4) - 1; 
+		buttonPositions[i][1] = 0.5 - ((i) % 4) * 0.5 ;
+	}
 }
 
 int getButtonHit(float x, float y){
@@ -226,7 +225,6 @@ int getButtonHit(float x, float y){
 }
 
 
-// to do: add speed up, slow down, show text, and pluto buttons
 void mouseOptions(int button, int state, int x, int y){
 	if(button == GLUT_LEFT_BUTTON && state == GLUT_UP)
 	{
@@ -281,9 +279,9 @@ int main(int argc, char** argv){
    	glutInitWindowSize (500, 500); 
    	glutInitWindowPosition (200, 100);
 	glutCreateWindow ("Solar System");
-	init();
-	glutDisplayFunc(display);	 
-	glutReshapeFunc(reshape);
+	initGraphics();
+	glutDisplayFunc(displayGraphics);	 
+	glutReshapeFunc(reshapeGraphics);
 
 
 	glutInitWindowPosition (700, 100);
